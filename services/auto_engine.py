@@ -99,14 +99,14 @@ async def _process_target(app: Client, target: dict) -> None:
 
                 if result.status == "uploaded":
                     await _notify(app, target, result)
-             if cursor < chunk_end:
+            if cursor < chunk_end:
                 cursor = chunk_end
             db.set_last_seen(target["id"], cursor)
 
 
 async def _notify(app: Client, target: dict, result) -> None:
     text = (
-        "⟤ **Auto upload complete**\n\n"
+        "🤖 **Auto upload complete**\n\n"
         f"📢 {target['title']}\n"
         f"📁 `{result.name}`\n"
         f"🔗 {result.link}\n"
