@@ -114,7 +114,6 @@ def set_max_parallel(value: int) -> bool:
         return True
     except OSError:
         return False
-
 # Telegram bot accounts can trigger FloodWait when too many media ranges are read.
 # Per-job workers are capped, while TOTAL_DOWNLOAD_WORKERS bounds all jobs together.
 TELEGRAM_DOWNLOAD_WORKERS = _env_int("TELEGRAM_DOWNLOAD_WORKERS", 3, 1, 16)
