@@ -203,6 +203,8 @@ async def send_tb_account(
 ) -> None:
     """Show connection details without ever displaying the saved cookie."""
     token = db.get_token(uid)
+    if token:
+        state.waiting_for_token.discard(uid)
     if not token:
         state.waiting_for_token.add(uid)
         text = BIND_HELP
