@@ -60,18 +60,43 @@ def parse_telegram_link(text: str) -> TelegramLink | None:
     parsed = urlparse(raw)
     if parsed.netloc.lower() not in _HOSTS:
         return None
+
     parts = [part for part in parsed.path.split("/") if part]
+    if not parts:
+        return None
+    if parts[0] == "s":
+        parts = parts[1:]
+    if not parts:
+        return None
 
-Yˆ›İ\Î‚ˆ™]\›ˆ›Û™BˆYˆ\ÖÌHOHœÈ‚ˆ\ÈH\ÖÌWBˆYˆ›İ\Î‚ˆ™]\›ˆ›Û™BˆYˆ\ÖÌHOH˜È‚ˆYˆ[Š\ÊHÈÜˆ›İ\ÖÌWKš\ÙYÚ]
+    if parts[0] == "c":
+        if len(parts) < 3 or not parts[1].isdigit() or not parts[2].isdigit():
+            return None
+        return TelegramLink(raw, int(f"-100{parts[1]}"), int(parts[2]), None, True)
 
-HÜˆ›İ\ÖÌ—Kš\ÙYÚ]
+    if parts[0].startswith("+") or parts[0] in {
+        "joinchat",
+        "addstickers",
+        "share",
+        "proxy",
+        "socks",
+    }:
+        return None
 
-N‚ˆ™]\›ˆ›Û™Bˆ™]\›ˆ[YÜ˜[S[šÊ˜]Ë[
-ˆ‹LLÜ\ÖÌW_HŠK[
-\ÖÌ—JK›Û™KYJB‚ˆYˆ\ÖÌKœİ\İÚ]
-ŠÈŠHÜˆ\ÖÌH[ˆÂˆš›Ú[˜Ú]‹ˆ˜YİXÚÙ\œÈ‹ˆœÚ\™H‹ˆœ›ŞH‹ˆœÛØÚÜÈ‹ˆN‚ˆ™]\›ˆ›Û™B‚ˆYˆ[Š\ÊHˆÜˆ›İ\ÖÌWKš\ÙYÚ]
+    if len(parts) < 2 or not parts[1].isdigit():
+        return None
 
-N‚ˆ™]\›ˆ›Û™Bˆ\Ù\›˜[YHH\ÖÌBˆ™]\›ˆ[YÜ˜[S[šÊ˜]Ë\Ù\›˜[YK[
-\ÖÌWJK\Ù\›˜[YK˜[ÙJB‚‚™YˆY\ÜØYÙWÛ[šÊÚ]ÚYˆ[Y\ÜØYÙWÚYˆ[\Ù\›˜[YNˆİˆ›Û™HH›Û™JHOˆİ‚ˆˆˆZ[HØ[›ÛšXØ[›YH[šÈ›ÜˆHİÜ™YY\ÜØYÙKˆˆˆ‚ˆYˆ\Ù\›˜[YN‚ˆ™]\›ˆˆšÎ‹Ëİ›YKŞİ\Ù\›˜[Y_KŞÛY\ÜØYÙWÚYH‚ˆ˜[YHH[
-Ú]ÚY
-BˆYˆ˜[YH‚ˆ[\›˜[HXœÊ˜[YJHHWÌÌÌÌˆYˆ[\›˜[ˆ‚ˆ™]\›ˆˆšÎ‹Ëİ›YKØËŞÚ[\›˜[KŞÛY\ÜØYÙWÚYH‚ˆ™]\›ˆˆšÎ‹Ëİ›YKØËŞØXœÊ˜[YJ_KŞÛY\ÜØYÙWÚYH‚
+    username = parts[0]
+    return TelegramLink(raw, username, int(parts[1]), username, False)
+
+
+def message_link(chat_id: int, message_id: int, username: str | None = None) -> str:
+    """Build a canonical t.me link for a stored message."""
+    if username:
+        return f"https://t.me/{username}/{message_id}"
+    value = int(chat_id)
+    if value < 0:
+        internal = abs(value) - 1_000_000_000_000
+        if internal > 0:
+            return f"https://t.me/c/{internal}/{message_id}"
+    return f"https://t.me/c/{abs(value)}/{message_id}"

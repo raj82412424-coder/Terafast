@@ -38,6 +38,13 @@ async def safe_edit(message, text: str, reply_markup=None) -> None:
     try:
         await message.reply_text(text, reply_markup=reply_markup, **NO_PREVIEW)
     except TypeError:
-        await message.reply_text(text, reply_markup)
+        await message.reply_text(text, reply_markup=reply_markup)
     except Exception as exc:  # noqa: BLE001
         log.debug("reply_text failed: %r", exc)
+
+
+async def safe_reply(message, text: str, reply_markup=None) -> None:
+    try:
+        await message.reply_text(text, reply_markup=reply_markup, **NO_PREVIEW)
+    except TypeError:
+        await message.reply_text(text, reply_markup=reply_markup)
