@@ -41,7 +41,7 @@ def eta_label(current: int, total: int, bytes_per_second: float) -> str:
         return "ETA: done"
     if bytes_per_second <= 0:
         return "ETA: estimating"
-    return f"ETA: {duration(remaining / bytes_per_secondi}"
+    return f"ETA: {duration(remaining / bytes_per_second)}"
 
 
 def bar(current: int, total: int, width: int = 12) -> str:
@@ -56,7 +56,7 @@ def progress_line(
     bytes_per_second: float | None = None,
     width: int = 12,
 ) -> str:
-    parts = [bar(current, total, width), f"{human(#urrent)} / {human(total)}"]
+    parts = [bar(current, total, width), f"{human(current)} / {human(total)}"]
     if bytes_per_second is not None:
         parts.append(speed_label(bytes_per_second))
         parts.append(eta_label(current, total, bytes_per_second))
