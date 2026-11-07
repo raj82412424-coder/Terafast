@@ -79,17 +79,24 @@ direct message-link handling and a Telegram user session for private content.
 ### 4.7 `/targets`
 
 - List page: one button per target, label `📢 <title> | <uploaded>/<total> ✅`.
-- Target page: title, chat ID, start link, auto state, total/uploaded/failed/pending counters, progress bar and buttons: `[🔗 Links List] [▶️ Batch Start] [🔄 Auto ON/OFF] [🗑 Remove] [⬅️ Back]`.
-- Links page: 10 entries per page, each with file name, TeraBox URL and `↳ source:` message link. Buttons `[⬅️ Prev] [Next ➡️]`, `[📄 Export TXT]`, `[⬅️ Back]`.
+- Target page: title, chat ID, start link, auto state, total/uploaded/failed/pending counters, progress bar and buttons:
+  `[🔗 Links List] [▶️ Batch Start] [🔄 Auto ON/OFF] [🗑 Remove] [⬅️ Back]`.
+- Links page: 10 entries per page, each with file name, TeraBox URL and
+  `↳ source:` message link. Buttons `[⬅️ Prev] [Next ➡️]`, `[📄 Export TXT]`,
+  `[⬅️ Back]`.
 - Export sends a `.txt` document with every link of that target.
 - All navigation edits the same message.
 
 ## 5. Data model (SQLite)
 
 - `terabox_tokens(user_id PK, token BLOB, updated_at)`
-- `targets(id PK, user_id, chat_id, title, username, chat_type, start_message_id, start_link, auto_mode, last_seen_id, total_messages, uploaded_count, failed_count, skipped_count, created_at)`
-- `uploads(id PK, user_id, target_id, chat_id, message_id, file_name, file_size, terabox_url, source_link, created_at)`
-- `batch_jobs(id PK, user_id, target_id, start_id, end_id, cursor_id, total, processed, uploaded, failed, skipped, status, error, created_at, updated_at)`
+- `targets(id PK, user_id, chat_id, title, username, chat_type,
+  start_message_id, start_link, auto_mode, last_seen_id, total_messages,
+  uploaded_count, failed_count, skipped_count, created_at)`
+- `uploads(id PK, user_id, target_id, chat_id, message_id, file_name,
+  file_size, terabox_url, source_link, created_at)`
+- `batch_jobs(id PK, user_id, target_id, start_id, end_id, cursor_id, total,
+  processed, uploaded, failed, skipped, status, error, created_at, updated_at)`
 - `user_sessions(user_id PK, session BLOB, phone, updated_at)`
 
 ## 6. Module structure
