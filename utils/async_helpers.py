@@ -3,7 +3,7 @@ from __future__ import annotations
 
 import asyncio
 from collections.abc import Awaitable, Callable
-from typing import any, TypeVar
+from typing import Any, TypeVar
 
 T = TypeVar("T")
 
@@ -13,8 +13,8 @@ async def to_thread_wait_on_cancel(
 ) -> T:
     """Run blocking work in a thread without deleting its input on cancellation.
 
-    ``asyncio.to_thread` cannot kill a native thread. Waiting for it to settle
-    before the caller's ``finally``` block removes downloaded files avoids a
+    ``asyncio.to_thread`` cannot kill a native thread. Waiting for it to settle
+    before the caller's ``finally`` block removes downloaded files avoids a
     race where the worker is still reading a deleted file.
     """
     task = asyncio.create_task(asyncio.to_thread(func, *args, **kwargs))
