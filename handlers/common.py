@@ -175,6 +175,76 @@ async def send_status(app: Client, message, uid: int, *, edit: bool = False) -> 
         await message.reply_text(text, reply_markup=main_menu())
 
 
+def _tb_account_keyboard() -> InlineKeyboardMarkup:
+    return InlineKeyboardMarkup(
+        [
+            [
+                InlineKeyboardButton("✏️ Change", callback_data="m:tb:change"),
+                InlineKeyboardButton("🗑 Delete", callback_data="m:tb:delete"),
+            ],
+            [InlineKeyboardButton("⬅️ Back", callback_data="m:back")],
+        ]
+    )
+
+
+def _tb_delete_keyboard() -> InlineKeyboardMarkup:
+    return InlineKeyboardMarkup(
+        [
+            [
+                InlineKeyboardButton("✅ Yes, delete", callback_data="m:tb:delete_yes"),
+                InlineKeyboardButton("⬅️ Cancel", callback_data="m:tb:delete_no"),
+            ]
+        ]
+    )
+
+
+async def send_tb_account(
+    app: Client, message, uid: int, *, edit: bool = False
+) -> None:
+    """Show connection details without ever displaying the saved cookie."""
+    token = db.get_token(uid)
+    if not token:
+        state.waiting_for_token.add(uid)
+        text = BIND_HELP
+        keyboard = InlineKeyboardMarkup(
+            [[InlineKeyboardButton("⬅️ Back", callback_data="m:back")]]
+        )
+        if edit:
+            await safe_edit(message, text, keyboard)
+        else:
+            await message.reply_text(text, reply_markup=keyboard)
+        return
+
+    lines = [
+        "🔑 **TeraBox Account**",
+        "",
+        "✅ Connection: **Bound**",
+        "🔒 Cookie: Saved securely (encrypted)",
+    ]
+    try:
+        quota = await to_thread_wait_on_cancel(TeraBox(token).validate)
+        lines.extend(
+            [
+                f"📦 Storage: {human(quota.get('used', 0))} / "
+                f"{human(quota.get('total', 0))}",
+                "🟢 Status: **Connected**",
+            ]
+        )
+    except Exception:  # noqa: BLE001 - do not expose cookie/API details
+        lines.extend(
+            [
+                "🟡 Status: **Bound, refresh failed**",
+                "Quota details abhi fetch nahi ho paaye. Change se cookie update karo.",
+            ]
+        )
+
+    text = "\n".join(lines)
+    if edit:
+        await safe_edit(message, text, _tb_account_keyboard())
+    else:
+        await message.reply_text(text, reply_markup=_tb_account_keyboard())
+
+
 async def handle_parallel_text(app: Client, message) -> None:
     await _apply_parallel(message, message.text or "")
 
@@ -301,8 +371,41 @@ async def handle_callback(app: Client, query) -> None:
 
         await targets.start_set_flow(app, query.message, uid, edit=True)
     elif data == "m:tb":
+        await send_tb_account(app, query.message, uid, edit=True)
+    elif data == "m:tb:change":
         state.waiting_for_token.add(uid)
-        await safe_edit(query.message, BIND_HELP)
+        await safe_edit(
+            query.message,
+            BIND_HELP,
+            InlineKeyboardMarkup(
+                [[InlineKeyboardButton("⬅️ Back", callback_data="m:tb")]]
+            ),
+        )
+    elif data == "m:tb:delete":
+        if db.get_token(uid) is None:
+            await send_tb_account(app, query.message, uid, edit=True)
+            return
+        await safe_edit(
+            query.message,
+            "⚠️ **TeraBox account delete karna hai?**\n\n"
+            "Saved cookie permanently remove ho jayegi. Upload jobs par iska effect nahi hoga, "
+            "lekin next upload se pehle dobara bind karna padega.",
+            _tb_delete_keyboard(),
+        )
+    elif data == "m:tb:delete_yes":
+        state.waiting_for_token.discard(uid)
+        deleted = db.delete_token(uid)
+        invalidate_chat_cache()
+        await safe_edit(
+            query.message,
+            "🗑 TeraBox account delete ho gaya." if deleted else "Koi TeraBox account saved nahi tha.",
+            main_menu(),
+        )
+    elif data == "m:tb:delete_no":
+        await send_tb_account(app, query.message, uid, edit=True)
+    elif data == "m:back":
+        state.waiting_for_token.discard(uid)
+        await safe_edit(query.message, "🏠 **Main menu**", main_menu())
     elif data == "m:login":
         from handlers import login
 
