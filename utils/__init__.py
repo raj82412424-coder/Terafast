@@ -1,1 +1,1 @@
-"""Utilitys: formatting, links, queue, Telegram and async helpers."""
+"""Shared utility helpers."""

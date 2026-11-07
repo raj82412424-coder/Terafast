@@ -1,4 +1,14 @@
-"""Message handler package."""
+"""Telegram handler registration."""
+from __future__ import annotations
 
-from handlers.router import register_handlers
-__all__ = ["register_handlers"]
+from pyrogram import Client
+
+
+def register_handlers(app: Client) -> None:
+    from handlers import batch, common, login, router, targets
+
+    common.register(app)
+    targets.register(app)
+    batch.register(app)
+    login.register(app)
+    router.register(app)
